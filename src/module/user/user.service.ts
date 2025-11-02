@@ -1,0 +1,142 @@
+import { Otp } from './../Db/models/otp.model';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import { HUserDocument, UserRepo } from '../Db';
+import { confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './DTO/signUpDTO';
+import { UserGender, UserOtp, UserRole } from 'src/common/enums';
+import { emailTemplate, generateOTP, sendEmail } from 'src/common';
+import { OtpRepo } from '../Db/repositories/otp.repo';
+import { Types } from 'mongoose';
+import { Compare } from 'src/utils/hash';
+import { JwtService } from '@nestjs/jwt';
+
+
+@Injectable()
+export class UserService {
+    constructor(
+         private readonly userRepo: UserRepo,
+        private readonly OtpRepo: OtpRepo,
+        private jwtService: JwtService
+
+
+        ){}
+
+private async sendOtp(userId:Types.ObjectId){
+    const otp = await generateOTP()
+    await this.OtpRepo.create({
+        type:UserOtp.confirmEmail,
+        code:otp.toString(),
+        createdBy:userId,
+        expireAt: new Date(Date.now() + 60 * 1000)
+    })
+        
+}
+
+    async signUp(body:signUpDTO){
+        const {fName,lName,age,gender,password,email,userName}=body
+const userExist = await this.userRepo.findOne({ email })
+
+  if (userExist) {
+    throw new ConflictException('User already exist');
+  }
+        const user = await this.userRepo.create({
+            fName,
+            lName,
+            age,
+            gender : gender? (gender as UserGender):UserGender.male,
+            password,
+            email,
+            userName
+        })
+        if(!user){
+            throw new ForbiddenException("User not created")
+        }
+        await this.sendOtp(user._id)
+        return user
+    }
+
+    
+    async resendOtp(body:resendOtpDTO){
+    const {email}=body
+
+   const user = await this.userRepo.findOne(
+  { email, confirmed: { $exists: false } }, 
+  undefined, 
+  { populate: { path: "otp" } } 
+)
+
+if (!user) {
+  throw new BadRequestException("User not found");
+}
+    if (await(user.otp as any).length >0) {
+    throw new BadRequestException("otp already exist");
+}
+
+    await this.sendOtp(user._id)
+        return {message :"otp sent success"}
+
+    }
+
+  async confirmEmail(body:confirmEmailDTO){
+    const {email ,code}=body
+    
+    const user = await this.userRepo.findOne(
+  { email, confirmed: { $exists: false } },
+  undefined,
+  { populate: { path: "otp" } }
+);
+
+if (!user) {
+  throw new BadRequestException("User not found");
+}
+
+  if(!Compare({plainText:code ,hash:(user.otp as any)[0].code }))
+  {
+      throw new BadRequestException("Invalid otp");
+
+  }
+
+  user.confirmed= true
+await user.save()
+await this.OtpRepo.deleteOne({filter:{createdBy :user._id}})
+return {message:"email already confirmed"}
+
+    }
+
+ async login(body:loginDTO){
+    const {email,password}=body
+    
+    const user = await this.userRepo.findOne({
+    filter :{
+        email,
+        confirmed:{$exists:true}
+    },}
+)
+
+if (!user) {
+  throw new BadRequestException("User not found");
+}
+  if(!await Compare({plainText:password ,hash:user.password }))
+  {
+      throw new BadRequestException("Invalid password");
+  }
+
+    const access_token =await this.jwtService.signAsync(
+   { userId:user._id , },
+   {
+    secret: user.role === UserRole.admin? process.env.ACCESS_TOKEN_ADMIN!: process.env.ACCESS_TOKEN_USER!, 
+    expiresIn : "1h" 
+ }
+);
+    
+    const refresh_token =await this.jwtService.signAsync(
+    { id:user._id , email :user.email },
+    {
+    secret: user.role === UserRole.admin? process.env.REFRESH_TOKEN_ADMIN!: process.env.REFRESH_TOKEN_USER!,  
+      expiresIn : "1y" 
+    }
+);
+
+    return {message:"Done",access_token,refresh_token}
+    }
+
+}
