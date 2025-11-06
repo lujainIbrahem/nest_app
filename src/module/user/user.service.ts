@@ -1,13 +1,12 @@
-import { Otp } from './../Db/models/otp.model';
+import { TokenService } from './../../common/service/token.service';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
-import { HUserDocument, UserRepo } from '../Db';
+import {  UserRepo } from '../Db';
 import { confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './DTO/signUpDTO';
 import { UserGender, UserOtp, UserRole } from 'src/common/enums';
-import { emailTemplate, generateOTP, sendEmail } from 'src/common';
+import {  generateOTP } from 'src/common';
 import { OtpRepo } from '../Db/repositories/otp.repo';
 import { Types } from 'mongoose';
-import { Compare } from 'src/utils/hash';
-import { JwtService } from '@nestjs/jwt';
+import { Compare } from 'src/utils';
 
 
 @Injectable()
@@ -15,10 +14,8 @@ export class UserService {
     constructor(
          private readonly userRepo: UserRepo,
         private readonly OtpRepo: OtpRepo,
-        private jwtService: JwtService
-
-
-        ){}
+        private tokenService: TokenService
+      ){}
 
 private async sendOtp(userId:Types.ObjectId){
     const otp = await generateOTP()
@@ -83,33 +80,28 @@ if (!user) {
   { email, confirmed: { $exists: false } },
   undefined,
   { populate: { path: "otp" } }
-);
+)
 
 if (!user) {
-  throw new BadRequestException("User not found");
+  throw new BadRequestException("User not found or already exists");
 }
 
-  if(!Compare({plainText:code ,hash:(user.otp as any)[0].code }))
-  {
-      throw new BadRequestException("Invalid otp");
-
+  if(!Compare({plainText:code ,hash:(user.otp as any)[0].code })){
+    throw new BadRequestException("Invalid otp")
   }
 
-  user.confirmed= true
+user.confirmed= true
 await user.save()
 await this.OtpRepo.deleteOne({filter:{createdBy :user._id}})
-return {message:"email already confirmed"}
+return {message:"email confirmed"}
 
-    }
+}
 
  async login(body:loginDTO){
     const {email,password}=body
     
-    const user = await this.userRepo.findOne({
-    filter :{
-        email,
-        confirmed:{$exists:true}
-    },}
+    const user = await this.userRepo.findOne(
+     {email,confirmed:{$exists:true}}
 )
 
 if (!user) {
@@ -120,21 +112,21 @@ if (!user) {
       throw new BadRequestException("Invalid password");
   }
 
-    const access_token =await this.jwtService.signAsync(
-   { userId:user._id , },
-   {
+    const access_token =await this.tokenService.GenerateToken({
+  payload: { userId:user._id ,email: user.email },
+   options:{
     secret: user.role === UserRole.admin? process.env.ACCESS_TOKEN_ADMIN!: process.env.ACCESS_TOKEN_USER!, 
     expiresIn : "1h" 
  }
-);
+ });
     
-    const refresh_token =await this.jwtService.signAsync(
-    { id:user._id , email :user.email },
-    {
+    const refresh_token =await this.tokenService.GenerateToken({
+    payload:{ id:user._id , email :user.email },
+     options:{
     secret: user.role === UserRole.admin? process.env.REFRESH_TOKEN_ADMIN!: process.env.REFRESH_TOKEN_USER!,  
       expiresIn : "1y" 
     }
-);
+ });
 
     return {message:"Done",access_token,refresh_token}
     }

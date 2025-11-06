@@ -1,12 +1,11 @@
-import { EventEmitter } from "events"
-import { sendEmail } from "./sendEmail"
-import { emailTemplate } from "./templateEmail"
+import EventEmitter from "events"
+import { emailTemplate, sendEmail } from "src/common"
 import { UserOtp } from "src/common/enums"
 
 
-export const eventEmiiter = new EventEmitter()
+export const eventEmitter= new EventEmitter()
 
- eventEmiiter.on(UserOtp.confirmEmail,async(data)=>{
+ eventEmitter.on(UserOtp.confirmEmail,async(data)=>{
   const { email,otp } = data
   await sendEmail({
     to:email,
@@ -18,7 +17,7 @@ export const eventEmiiter = new EventEmitter()
 
 
  
- eventEmiiter.on(UserOtp.forgetPassword,async(data)=>{
+ eventEmitter.on(UserOtp.forgetPassword,async(data)=>{
   const { email,otp } = data
   await sendEmail({
     to:email,

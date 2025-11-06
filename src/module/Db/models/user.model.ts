@@ -2,8 +2,8 @@
 import { MongooseModule, Prop, Schema, SchemaFactory, Virtual } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { UserGender, UserProvider, UserRole } from 'src/common/enums';
-import { Hash } from 'src/utils/hash';
 import type{ HOtpDocument } from './otp.model';
+import { Hash } from 'src/utils';
 
 @Schema({timestamps:true, toObject:{virtuals:true}, toJSON:{virtuals:true},strictQuery:true})
 
@@ -39,7 +39,7 @@ export class User {
   @Prop({type:String, enum:UserProvider, default:UserProvider.system})
   provider: UserProvider;
   @Virtual()
-  otp:HOtpDocument
+  otp:HOtpDocument[]
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -53,7 +53,7 @@ async paginate(
 }
 
  async findOne(filter: RootFilterQuery<TDocument>, projection?: ProjectionType<TDocument>, options?: QueryOptions<TDocument>) {
-  return this.model.findOne(filter, projection, options);
+  return await this.model.findOne(filter, projection, options);
 }
 
 

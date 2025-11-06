@@ -1,8 +1,7 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { eventEmiiter } from 'src/common';
 import {  UserOtp } from 'src/common/enums';
-import { Hash } from 'src/utils/hash';
+import { eventEmitter, Hash } from 'src/utils';
 
 @Schema({timestamps:true, toObject:{virtuals:true}, toJSON:{virtuals:true},strictQuery:true})
 
@@ -47,7 +46,7 @@ OtpSchema.index({expireAt:1},{expireAfterSeconds:0})
  OtpSchema.post("save",async function (doc,next) {
     const that = this as HOtpDocument & {is_new:boolean , plain_code:string}
     if(that.is_new){
-        eventEmiiter.emit(doc.type , {otp:that.plain_code , email:(doc.createdBy as any).email})  
+      eventEmitter.emit(doc.type , {otp:that.plain_code , email:(doc.createdBy as any).email})  
     }
         next()
     })
