@@ -1,20 +1,23 @@
-import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { TokenService } from '../service/token.service';
+import { tokenType } from './../middleware/AuthenticationMiddleware';
+import { BadRequestException, CanActivate, ExecutionContext, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { TokenService } from 'src/common/service/token.service';
 import { Reflector } from '@nestjs/core';
 import { tokenName } from '../decorator';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
-  constructor( 
+  constructor(
+    @Inject(forwardRef(() => TokenService))
     private tokenService: TokenService,
     private reflector: Reflector
-){}
+  ){}
+  
  async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {
-try{
-    const tokenType = this.reflector.get(tokenName, context.getHandler());
 
+    const typetoken = this.reflector.get(tokenName, context.getHandler());
     let req:any;
     let authorization:string =""
 
@@ -22,12 +25,14 @@ try{
      req = context.switchToHttp().getRequest()
      authorization = req.headers.authorization
     }
+    try{
+      
     var [prefix,token ] =authorization?.split(" ") || [] 
     if(!prefix || !token)
         {
       throw new BadRequestException("token not exit");
     }
-    const signature = await this.tokenService.GetSignature(prefix)
+    const signature = await this.tokenService.GetSignature(prefix,typetoken)
     if(!signature){
         throw new BadRequestException("Invalid token");
     
@@ -40,8 +45,8 @@ try{
        return true;
        }
      catch (error) {
-            throw new BadRequestException(error.message);
+      throw new BadRequestException(error.message);
     
       }
 
-}}
+    }}

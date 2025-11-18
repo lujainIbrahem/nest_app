@@ -61,11 +61,33 @@ async paginate(
     return await this.model.updateOne(filter,update)
     }
     
-  async findOneAndUpdate(filter: RootFilterQuery<TDocument>,update: UpdateQuery<TDocument>,options?: 
-    QueryOptions<TDocument> | null)
-   :Promise<TDocument | null>
-    {return await this.model.findOneAndUpdate(filter, update, options)}
+  async findOneAndUpdate(
+    {
+    filter,
+    update,
+    options
+  }:{
+    filter: RootFilterQuery<TDocument>,
+    update: UpdateQuery<TDocument>,
+    options?: QueryOptions<TDocument> 
+}
+):Promise<TDocument | null>
+    {
+      return await this.model.findOneAndUpdate(filter, update, {new:true})
+    }
     
+  async findOneAndDelete(
+  {
+    filter
+  }:{
+    filter: RootFilterQuery<TDocument>
+}
+):Promise<TDocument | null>
+{
+  return await this.model.findOneAndDelete(filter)
+}
+
+
    async findById(id:Types.ObjectId | string, projection?:ProjectionType<TDocument>,options?:QueryOptions<TDocument>) :
     Promise<HydratedDocument<TDocument> | null>{
     return await this.model.findById(id,projection,options)

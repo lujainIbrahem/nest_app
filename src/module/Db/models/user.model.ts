@@ -1,7 +1,7 @@
     
 import { MongooseModule, Prop, Schema, SchemaFactory, Virtual } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { UserGender, UserProvider, UserRole } from 'src/common/enums';
+import { UserGenderEnum, UserProviderEnum, UserRoleEnum } from 'src/common/enums';
 import type{ HOtpDocument } from './otp.model';
 import { Hash } from 'src/utils';
 
@@ -30,14 +30,14 @@ export class User {
   password: string;
   @Prop({type:Boolean})
   confirmed: boolean; 
-  @Prop({type:String, enum:UserGender, default:UserGender.male})
-  gender: UserGender;
-  @Prop({type:String, enum:UserRole, default:UserRole.user})
-  role: UserRole;
+  @Prop({type:String, enum:UserGenderEnum, default:UserGenderEnum.male})
+  gender: UserGenderEnum;
+  @Prop({type:String, enum:UserRoleEnum, default:UserRoleEnum.user})
+  role: UserRoleEnum;
   @Prop({type:Date,default:Date.now})
   changeCredentails: Date;
-  @Prop({type:String, enum:UserProvider, default:UserProvider.system})
-  provider: UserProvider;
+  @Prop({type:String, enum:UserProviderEnum, default:UserProviderEnum.system})
+  provider: UserProviderEnum;
   @Virtual()
   otp:HOtpDocument[]
 }

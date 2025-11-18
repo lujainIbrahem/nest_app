@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { UserRepo } from "src/module/Db";
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { JwtPayload } from "jsonwebtoken";
-import { UserTokenType } from "../enums";
+import { UserTokenTypeEnum } from "../enums";
 
 
 @Injectable()
@@ -27,9 +27,9 @@ export class TokenService {
 }
 
 
-GetSignature =async (prefix: string, tokenType: UserTokenType = UserTokenType.access) => {
+GetSignature =async (prefix: string, tokenType: UserTokenTypeEnum = UserTokenTypeEnum.access) => {
 
-if(tokenType ===UserTokenType.access)
+if(tokenType ===UserTokenTypeEnum.access)
     {if (prefix == "user"){
 return process.env.ACCESS_TOKEN_USER}
 
@@ -39,7 +39,7 @@ else if(prefix =="admin"){
 else{return null}
     }
 
-if(tokenType ===UserTokenType.refresh)
+if(tokenType ===UserTokenTypeEnum.refresh)
     {if (prefix == "user"){
 return process.env.REFRESH_TOKEN_USER}
 

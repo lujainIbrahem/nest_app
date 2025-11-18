@@ -1,12 +1,12 @@
-import { Body, Controller,  Get,  ParseFilePipe,  Patch,  Post, Request, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { tokenType } from './../../common/middleware/AuthenticationMiddleware';
+import { Body, Controller,  Get,  ParseFilePipe,  Patch,  Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
-import {  confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './DTO/signUpDTO';
-import type { UserReq } from 'src/common/interfaces';
-import { AuthenticationGuard } from 'src/common/guards';
-import { Role, token, UserRole } from 'src/common';
-import { authorizationGuard } from 'src/common/guards/authorization.guard';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {  confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './signUpDTO';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { multerlocal } from 'src/utils';
+import{ Auth, User, UserRoleEnum, UserTokenTypeEnum } from 'src/common';
+import type{ HUserDocument } from '../Db';
+
 
 @Controller('user')
 export class UserController {
@@ -43,14 +43,16 @@ login(
     return this.userService.login(body)
 }
 
-@token()
-@UseGuards(AuthenticationGuard, authorizationGuard)
-@Role([UserRole.user])
+
+@Auth({
+    roles:[UserRoleEnum.user],
+    typeToken:UserTokenTypeEnum.access
+})
 @Get("profile")
 profile(
-    @Request() req:UserReq,
+    @User() user:HUserDocument,
 ){
-    return {message:"done" , user:req.user}
+    return {message:"done" , user}
 }
 
 

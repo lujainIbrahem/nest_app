@@ -1,15 +1,15 @@
-export enum UserGender {
+export enum UserGenderEnum {
     male = "male",
     female = "female",
 }
 
-export enum UserRole {
+export enum UserRoleEnum {
     user = "user",
     admin = "admin", 
     superAdmin="superAdmin"
 }
 
-export enum   UserProvider{
+export enum  UserProviderEnum {
    system ="system",
    google ="google"
 }

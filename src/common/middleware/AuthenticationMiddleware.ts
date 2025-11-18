@@ -4,9 +4,9 @@ import { BadRequestException, Injectable, NestMiddleware } from '@nestjs/common'
 import {  Response, NextFunction } from 'express';
 import { TokenService } from '../service/token.service';
 import { UserReq } from '../interfaces';
-import { UserTokenType } from '../enums';
+import { UserTokenTypeEnum } from '../enums';
 
-export const tokenType =(typeToken:UserTokenType=UserTokenType.access)=>{
+export const tokenType =(typeToken:UserTokenTypeEnum=UserTokenTypeEnum.access)=>{
     return  (req: UserReq, res: Response, next: NextFunction)=>{
     req.typeToken=typeToken
     next()

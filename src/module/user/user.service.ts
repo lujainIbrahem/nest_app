@@ -1,10 +1,9 @@
 import { TokenService } from './../../common/service/token.service';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
-import {  UserRepo } from '../Db';
-import { confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './DTO/signUpDTO';
-import { UserGender, UserOtp, UserRole } from 'src/common/enums';
+import {  OtpRepo, UserRepo } from '../Db';
+import { confirmEmailDTO, loginDTO, resendOtpDTO, signUpDTO } from './signUpDTO';
+import { UserGenderEnum, UserOtp, UserRoleEnum } from 'src/common/enums';
 import {  generateOTP } from 'src/common';
-import { OtpRepo } from '../Db/repositories/otp.repo';
 import { Types } from 'mongoose';
 import { Compare } from 'src/utils';
 
@@ -29,7 +28,7 @@ private async sendOtp(userId:Types.ObjectId){
 }
 
     async signUp(body:signUpDTO){
-        const {fName,lName,age,gender,password,email,userName}=body
+        const {fName,lName,age,gender,password,email,userName,role}=body
 const userExist = await this.userRepo.findOne({ email })
 
   if (userExist) {
@@ -39,10 +38,11 @@ const userExist = await this.userRepo.findOne({ email })
             fName,
             lName,
             age,
-            gender : gender? (gender as UserGender):UserGender.male,
+            gender : gender? (gender as UserGenderEnum):UserGenderEnum.male,
             password,
             email,
-            userName
+            userName,
+            role: role? (role as UserRoleEnum):UserRoleEnum.user
         })
         if(!user){
             throw new ForbiddenException("User not created")
@@ -115,7 +115,7 @@ if (!user) {
     const access_token =await this.tokenService.GenerateToken({
   payload: { userId:user._id ,email: user.email },
    options:{
-    secret: user.role === UserRole.admin? process.env.ACCESS_TOKEN_ADMIN!: process.env.ACCESS_TOKEN_USER!, 
+    secret: user.role === UserRoleEnum.admin? process.env.ACCESS_TOKEN_ADMIN!: process.env.ACCESS_TOKEN_USER!, 
     expiresIn : "1h" 
  }
  });
@@ -123,7 +123,7 @@ if (!user) {
     const refresh_token =await this.tokenService.GenerateToken({
     payload:{ id:user._id , email :user.email },
      options:{
-    secret: user.role === UserRole.admin? process.env.REFRESH_TOKEN_ADMIN!: process.env.REFRESH_TOKEN_USER!,  
+    secret: user.role === UserRoleEnum.admin? process.env.REFRESH_TOKEN_ADMIN!: process.env.REFRESH_TOKEN_USER!,  
       expiresIn : "1y" 
     }
  });

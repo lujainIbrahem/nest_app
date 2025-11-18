@@ -1,7 +1,6 @@
-import { email } from './../../../../node_modules/zod/src/v4/core/regexes';
 import {  IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsStrongPassword, Length, Matches, Max, Min, ValidateIf } from "class-validator"
 import { IsMatch } from "src/common/decorator";
-import { UserGender } from "src/common/enums";
+import { UserGenderEnum, UserRoleEnum } from "src/common/enums";
 
 
 export class resendOtpDTO{
@@ -36,9 +35,8 @@ export class confirmEmailDTO{
 }
 
 
-
 export class signUpDTO{
-        @IsNotEmpty()
+    @IsNotEmpty()
     @IsString()
     @IsEmail()
     email:string
@@ -67,11 +65,13 @@ export class signUpDTO{
     @Max(70)
     age:number
 
-
+    @IsOptional()
+    @IsEnum(UserGenderEnum)
+    gender?:string
 
     @IsOptional()
-    @IsEnum(UserGender)
-    gender?:string
+    @IsEnum(UserRoleEnum)
+    role?:string
 
     @IsStrongPassword()
     @IsNotEmpty({message:"password is required"})
