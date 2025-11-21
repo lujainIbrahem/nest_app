@@ -1,3 +1,4 @@
+import { CartModule } from './module/cart/cart.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,6 +9,7 @@ import { Connection } from 'mongoose';
 import { BrandModule } from './module/brand/brand.module';
 import { CategoryModule } from './module/category/category.module';
 import { subCategoryModule } from './module/subCategory/subCategory.module';
+import { ProductModule } from './module/product/product.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -24,7 +26,9 @@ MongooseModule.forRoot(process.env.MONGO_URL as string, {
 UserModule,
 BrandModule,
 CategoryModule,
-subCategoryModule
+subCategoryModule,
+ProductModule,
+CartModule
 
 ],
   controllers: [AppController],
