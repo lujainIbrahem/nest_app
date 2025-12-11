@@ -42,19 +42,17 @@ async removeCart(
 }
 
 
-//=======================updateQuantityCart============================
+//=======================clearCart============================
 
 @Auth({
 roles:[UserRoleEnum.admin,UserRoleEnum.user],
 typeToken:UserTokenTypeEnum.access
 })
-@Patch("updateQuantityCart/:id")
-async updateCart(
-    @Body() body:updateCartDTO,
-    @Param() params:idDTO,
+@Patch("clearCart")
+async clearCart(
     @User() user :HUserDocument,
 ){
-   const Cart = await this.CartService.updateQuantityCart(body, user ,params.id)
+   const Cart = await this.CartService.clearCart( user)
    return {message:"updated done",Cart}
 }
 

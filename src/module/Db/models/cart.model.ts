@@ -2,6 +2,7 @@ import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
 @Schema({timestamps:true, toObject:{virtuals:true}, toJSON:{virtuals:true},strictQuery:true})
+
 export class productCart {
 
   @Prop({type:Types.ObjectId,required:true, ref:"Product"})
@@ -21,7 +22,7 @@ export class Cart {
   @Prop({type:[productCart]})
    products: productCart[];
 
-  @Prop({type:[String]})
+  @Prop([{type:[String]}])
   subImages: string;
 
   @Prop({type:Number})
@@ -41,12 +42,12 @@ export class Cart {
 }
 
 export type HCartDocument =HydratedDocument<Cart>
-export const CartSchema = SchemaFactory.createForClass(Cart)
- CartSchema.pre("save", function (next) {
-   this.subTotal = this.products.reduce((total,product) => total + (product.quantity *product.finalPrice),0) 
+export const CartSchema = SchemaFactory.createForClass(Cart); 
+
+ CartSchema.pre("save",async function (next) {
+    this.subTotal = this.products.reduce((total,product) => total +(product.quantity * product.finalPrice),0) 
         next()
     })
-
   CartSchema.pre(["findOne","find","findOneAndDelete","findOneAndDelete"],function (next) {
   const query = this.getQuery()
 const {paranoid , ...rest} =query

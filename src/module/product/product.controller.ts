@@ -94,5 +94,19 @@ async getAllProducts(
    return {message:"done",Product}
 }
 
+//=======================wishList==========================
+@Auth({
+roles:[UserRoleEnum.admin,UserRoleEnum.user],
+typeToken:UserTokenTypeEnum.access
+})
+@Post("wishList/:id")
+async wishList(
+    @Param() params:idDTO,
+    @User() user :HUserDocument,
+){
+   const userExist = await this.ProductService.wishList( user ,params.id)
+   return {message:"wishlist done",user:userExist}
+}
+
 
 }

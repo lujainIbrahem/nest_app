@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { BrandRepo, CategoryRepo, subCategoryRepo } from '../Db';
+import { BrandRepo, CategoryRepo, subCategoryRepo , UserRepo} from '../Db';
 import { Types } from 'mongoose';
 import { ProductRepo } from '../Db';
 import { createProductDTO, QueryDTO, updateProductDTO } from './product.Dto';
@@ -13,8 +13,7 @@ export class ProductService {
         private readonly BrandRepo: BrandRepo,
         private readonly CategoryRepo: CategoryRepo,
         private readonly subCategoryRepo: subCategoryRepo,
-
-
+        private readonly UserRepo:UserRepo
     ){}
     
 //=======================createProduct============================    
@@ -192,6 +191,30 @@ async getAllProducts(query:QueryDTO){
     
 }
 
+
+//=======================wishList============================
+async wishList(
+    user:HUserDocument,
+    id:Types.ObjectId
+){
+   const product = await this.ProductRepo.findOne({ _id:id })
+    if (!product) {
+        throw new NotFoundException('product not found');
+    }  
+         
+   let userExist = await this.UserRepo.findOneAndUpdate({
+    filter:{ _id:user.id , wishList:{ $in :id }},
+    update:{ $pull:{ wishList : id} }
+   })
+    if (!userExist) {
+    userExist = await this.UserRepo.findOneAndUpdate({
+    filter:{ _id:user.id },
+    update:{ $push:{ wishList : id} }
+   })
+    }   
+    return userExist
+    
+}
 
 
 }

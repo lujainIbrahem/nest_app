@@ -25,6 +25,14 @@ export class AuthenticationGuard implements CanActivate {
      req = context.switchToHttp().getRequest()
      authorization = req.headers.authorization
     }
+    else if(context.getType() === "ws"){
+     req = context.switchToWs().getClient()
+     authorization = req.headers.authorization
+    }
+    else if(context.getType() === "rpc"){
+     req = context.switchToRpc().getData()
+     authorization = req.headers.authorization
+    }
     try{
       
     var [prefix,token ] =authorization?.split(" ") || [] 

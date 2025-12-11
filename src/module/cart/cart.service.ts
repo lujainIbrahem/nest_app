@@ -68,7 +68,7 @@ async removeCart(user:HUserDocument,id:Types.ObjectId){
     if(!cart){
         throw new NotFoundException('cart not found');   
     }
-    cart.products= cart.products.filter((product)=>product.productId.toString()=== id.toString())
+cart.products = cart.products.filter((product) => product.productId.toString() !== id.toString())
     await cart.save()
     return cart
 }
@@ -93,8 +93,24 @@ async updateQuantityCart(body:updateCartDTO,user:HUserDocument,id:Types.ObjectId
    })
     await cart.save()
     return cart
+
 }
 
+//=======================clearCart============================    
+async clearCart(user:HUserDocument){
+    const cart = await this.CartRepo.findOneAndUpdate({
+        filter:{createdBy:user._id},
+        update:{
+         $set: { products: [] } 
+        }
+    })
+    if(!cart){
+        throw new NotFoundException('cart not found');   
+    }
+  
+    await cart.save()
+    return cart
 
+}
 
 }

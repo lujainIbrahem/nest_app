@@ -1,6 +1,6 @@
     
 import { MongooseModule, Prop, Schema, SchemaFactory, Virtual } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { UserGenderEnum, UserProviderEnum, UserRoleEnum } from 'src/common/enums';
 import type{ HOtpDocument } from './otp.model';
 import { Hash } from 'src/utils';
@@ -34,6 +34,8 @@ export class User {
   gender: UserGenderEnum;
   @Prop({type:String, enum:UserRoleEnum, default:UserRoleEnum.user})
   role: UserRoleEnum;
+  @Prop({type :[{type:Types.ObjectId, ref:"Product"}]})
+  wishList: Types.ObjectId[];
   @Prop({type:Date,default:Date.now})
   changeCredentails: Date;
   @Prop({type:String, enum:UserProviderEnum, default:UserProviderEnum.system})
